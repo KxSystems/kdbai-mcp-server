@@ -1,0 +1,68 @@
+[project]
+name = "mcp-server"
+version = "0.1.0"
+description = "MCP server for KDB.AI"
+readme = "README.md"
+requires-python = ">=3.11, <=3.14"
+dependencies = [
+    "mcp[cli]>=1.2.0",
+    "kdbai-client>=1.7.0",
+    "pykx>=2.2.2",
+    "openai>=1.79.0",
+    "pydantic-settings",
+    # "sentence_transformers",
+    # "openai",
+    # "tiktoken",
+]
+
+# Optional: uncomment above packages for embedding support, if necessary
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.1.0",
+    "pytest>=7.3.2,<8",
+    "pytest-cov>=4.0.0,<5",
+    "pytest-mock",
+    "coverage>=7.8.0",
+    "mypy",
+    "trio",
+]
+
+[project.scripts]
+mcp-server = "mcp_server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+addopts = "--tb=short --capture=tee-sys"
+testpaths = [
+    "tests/",
+]
+
+[tool.coverage.run]
+command_line = "-m pytest tests --junitxml=report.xml"
+branch = true
+dynamic_context = "test_function"
+source_pkgs = ["mcp_server"]
+relative_files = true
+
+[tool.coverage.paths]
+source = [
+    "mcp_server",
+]
+
+[tool.coverage.report]
+# Regexes for lines to exclude from consideration
+skip_empty = true
+skip_covered = false
+precision = 2
+
+[tool.coverage.html]
+directory = "htmlcov/coverage"
+show_contexts = true
+
+[tool.coverage.xml]
+output = "coverage.xml"
+

@@ -1,0 +1,102 @@
+KDB.AI Operations Guide for LLM Tools Usage
+
+Parameters information for query, search and hybrid search tools
+
+General Parameter Rules And Performance Optimization:
+- Use ISO format datetime strings for datetime and timestamps.
+- Place most selective filters first (filters that eliminate the most rows)
+- Use indexed columns for filtering when possible
+- Prefer exact matches over fuzzy/like when precision is needed
+- Consider using within ranges instead of multiple >= and <= filters
+- Batch related filters together for better query planning
+- Use appropriate fuzzy distance metrics for your use case
+
+1.Aggregation:
+- Parameter name in function call: 'aggs'
+
+- Use Cases:
+  - for running aggregation on a table
+  - to select columns in output from a table
+
+- Aggregation syntax:
+  - Simple column selection: {"column_alias": "column_name"}
+  - With functions: {"result_name1": ["function", "column_name"],"result_name2": ["function", "column_name"]}
+  - For count use any column in 'count' function and not *. See examples.
+  - To find unique values use distinct. See examples.
+
+- Aggregation Functions: Supports KDB+ aggregation functions like sum, avg, count, min, max, first, last, distinct, all, any, dev, sdev, var, svar, prd
+
+- Aggregation Examples:
+  - Multiple aggregations: aggs = {"total": ["sum", "amount"], "avg": ["avg", "price"], "countPrice": ["count", "price"]}
+  - Column selection: aggs = {"price":"price", "size":"size"}
+  - Count: aggs = {"priceCount":["count","price"]}
+  - Unique: aggs = {"uniqueSyms":["distinct","sym"]}
+
+2.Group By:
+- Parameter name in function call: 'group_by'
+- Applies group by operation on database operation
+- Syntax: list of column names
+- Example: group_by = ["symbol"]
+
+3.Sort:
+- Parameter name in function call: 'sort_columns'
+- Applies sorting on query result
+- Syntax: list of column names
+- Example: sort_columns = ["symbol"]
+
+4.Filters:
+KDB.AI uses KDB+ parse tree format for filtering. Filters are expressed as list representing operations, columns, and values.
+
+- Parameter name in function call: 'filters'
+- General filter rules:
+  - use partition filter if table is partitioned (for ex:date)
+  - filters order follow general rule of KDB+ filters
+- Filter structure => [[operator, column_name, value],[operator, column_name, value]]
+- Filter Operators: ">","<","=",">=","<=","<>","not","like","in","within","or","and","fuzzy". More details below:
+
+ a. Comparison Operators
+| Operator | Description | Example |
+|----------|-------------|---------|
+| "=" | Equal to | ["=", "status", "active"] |
+| "<>" | Not equal to | ["<>", "status", "inactive"] |
+| "<" | Less than | ["<", "age", 30] |
+| "<=" | Less than or equal | ["<=", "price", 100.0] |
+| ">" | Greater than | [">", "score", 85] |
+| ">=" | Greater than or equal | [">=", "rating", 4.0] |
+
+b. String Operators
+| Operator | Description | Example |
+|----------|-------------|---------|
+| "like" | Pattern matching (case-sensitive) | ["like", "name", "John*"] |
+
+c. Set Operators
+| Operator | Description | Example |
+|----------|-------------|---------|
+| "in" | Value in list | ["in", "category", ["tech", "finance", "health"]] |
+| "within" | Within range | ["within", "date", ["2023-01-01", "2023-12-31"]] |
+
+d. DateTime/Date/Time Filtering:
+Use ISO format datetime strings for datetime and timestamps. Examples:
+Dates: [">=", "date_column", "2024-08-01"]
+Time: [">=",  "time_column", "2024-08-01T15:30:00.123456Z"]
+
+e. Fuzzy approximate string match: '["fuzzy", "column", [["target", edit_distance, "metric"]]]'
+
+- Filter examples:
+  - Multiple filters use AND logic: '[["=", "col1", "val1"], [">", "col2", 100]]'
+  - OR logic via "in" operator: '[["in", "col1", ["val1", "val2"]]]' (equivalent to col1=val1 OR col1=val2)
+  - Complex logic: '[["=", "active", true], ["in", "type", ["A", "B"]]]'
+  - Wildcard Characters for pattern matching: `*` - '[["like","col1", "abc*"]]'
+
+- Fuzzy Filter Matching Details:
+Distance metrics: levenshtein (default), hamming, jaro, jaro_winkler, damerau_levenshtein, lcs, osa, prefix, postfix
+Basic fuzzy: '["fuzzy", "column", [["target", 2]]]' (uses levenshtein, distance=2)
+With specific metric: '["fuzzy", "column", [["target", 2, "hamming"]]]'
+Multiple targets: '["fuzzy", "column", [["target1", 1], ["target2", 2, "jaro"]]]'
+
+Error Prevention:
+Check column names exist before filtering
+Use appropriate data types in filter values
+Include reasonable limits for large datasets
+Validate date strings are in correct format (YYYY-MM-DD or ISO format)
+Use appropriate fuzzy distance metrics for your use case
