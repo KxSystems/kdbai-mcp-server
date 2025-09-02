@@ -8,14 +8,13 @@ dependencies = [
     "mcp[cli]>=1.2.0",
     "kdbai-client>=1.7.0",
     "pykx>=2.2.2",
-    "openai>=1.79.0",
     "pydantic-settings",
+
+    # Optional: uncomment the below packages for embedding support, if necessary
     # "sentence_transformers",
     # "openai",
     # "tiktoken",
 ]
-
-# Optional: uncomment above packages for embedding support, if necessary
 
 [project.optional-dependencies]
 dev = [
