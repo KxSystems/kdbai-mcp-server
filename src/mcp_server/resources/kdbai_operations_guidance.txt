@@ -100,3 +100,9 @@ Use appropriate data types in filter values
 Include reasonable limits for large datasets
 Validate date strings are in correct format (YYYY-MM-DD or ISO format)
 Use appropriate fuzzy distance metrics for your use case
+
+f. Column Name Quoting:
+Always use double quotes around column names to avoid conflicts with SQL reserved words.
+Examples: "Close", "Open", "Date", "Time", "Group", "Order", "Key", "Value"
+Correct:   select avg("Close") from stocks;
+Incorrect: select avg(Close) from stocks;
